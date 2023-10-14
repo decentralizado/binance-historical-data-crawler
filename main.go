@@ -36,17 +36,39 @@ func main() {
 
 	fileName, ok := os.LookupEnv("FILE_NAME")
 	if !ok {
-		fileName = "historical_data.csv"
+		fileName = "historical_data"
 	}
+
+	fileName = fmt.Sprintf("%s.csv", fileName)
 
 	startTimeRaw, ok := os.LookupEnv("START_TIME")
 	if !ok {
-		startTimeRaw = time.Now().Add((24 * time.Hour) * 30).Format(time.RFC3339)
+		startTimeRaw = time.Now().Add((24 * time.Hour) * 30).UTC().Format(time.RFC3339)
 	}
 
 	startTime, err := time.Parse(time.RFC3339, startTimeRaw)
 	if err != nil {
 		logger.Panic("failed to parse START_TIME", zap.Error(err))
+	}
+
+	endTimeRaw, ok := os.LookupEnv("END_TIME")
+	if !ok {
+		endTimeRaw = time.Now().UTC().Format(time.RFC3339)
+	}
+
+	endTime, err := time.Parse(time.RFC3339, endTimeRaw)
+	if err != nil {
+		logger.Panic("failed to parse END_TIME", zap.Error(err))
+	}
+
+	symbol, ok := os.LookupEnv("SYMBOL")
+	if !ok {
+		symbol = "BTCUSDT"
+	}
+
+	interval, ok := os.LookupEnv("INTERVAL")
+	if !ok {
+		interval = "1h"
 	}
 
 	client := binance.NewClient(apiKey, secretKey)
@@ -110,13 +132,12 @@ func main() {
 	}
 
 	isProcessing := true
-	endTime := time.Now()
 
 	for isProcessing {
 		logger.Info("processing...", zap.String("from", endTime.Format(time.RFC3339)), zap.String("to", endTime.Add(-1000*time.Hour).Format(time.RFC3339)))
 		klines := client.NewKlinesService()
-		klines.Symbol("BTCUSDT")
-		klines.Interval("1h")
+		klines.Symbol(symbol)
+		klines.Interval(interval)
 		klines.EndTime(endTime.UnixMilli())
 		klines.Limit(1000)
 		response, err := klines.Do(ctx)
