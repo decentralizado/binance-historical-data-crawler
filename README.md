@@ -58,10 +58,18 @@ go mod tidy
 
     **Specify Price Interval: (optional)**
 
-    In the `.env` file, set the `INTERVAL` parameter to your preferred historical data interval (e.g., "1m" for 1-minute data, "1h" for 1-hour data).
+    In the `.env` file, set the `INTERVAL` parameter to your preferred historical data interval (e.g., "1m" for 1-minute data, "1h" for 1-hour data, defaults to "1h").
 
     ```dotenv
     INTERVAL="1h"
+    ```
+
+    **Specify Per-Request Limit: (optional)**
+
+    In the `.env` file, set the `LIMIT` parameter to your preferred per-request results limit (e.g., "100" for 100 per-request results, defaults to "1000").
+
+    ```dotenv
+    LIMIT="100"
     ```
 
     **Specify Symbol: (optional)**
@@ -125,6 +133,7 @@ If you would like to contribute to the project, please follow these steps:
 We intend to support and implement the following features:
 
 - [ ] Templating of output files (to dynamically support other formats)
+- [ ] Exactly expected results instead of the aproximate
 - [ ] Configuration through YAML file
 - [ ] Automated CI/CD pipelines with GitHub Actions (Lint, Test, Security Analysis, etc.)
 - [ ] Automated releases of binaries (Windows, Linux, MacOS)

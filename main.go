@@ -5,8 +5,8 @@ import (
 	"errors"
 	"fmt"
 	"io/fs"
-	"log"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/adshao/go-binance/v2"
@@ -18,11 +18,7 @@ const outputDir = "out"
 
 func main() {
 	logger, _ := zap.NewProduction()
-	defer func() {
-		if err := logger.Sync(); err != nil {
-			log.Panicf("failed to sync logs: %+v", err)
-		}
-	}()
+	defer logger.Sync() //nolint:errcheck
 
 	apiKey, ok := os.LookupEnv("BINANCE_API_KEY")
 	if !ok {
@@ -69,6 +65,16 @@ func main() {
 	interval, ok := os.LookupEnv("INTERVAL")
 	if !ok {
 		interval = "1h"
+	}
+
+	limitRaw, ok := os.LookupEnv("LIMIT")
+	if !ok {
+		limitRaw = "1000"
+	}
+
+	limit, err := strconv.ParseInt(limitRaw, 10, 32)
+	if err != nil {
+		logger.Panic("failed to parse LIMIT", zap.Error(err))
 	}
 
 	client := binance.NewClient(apiKey, secretKey)
@@ -139,7 +145,7 @@ func main() {
 		klines.Symbol(symbol)
 		klines.Interval(interval)
 		klines.EndTime(endTime.UnixMilli())
-		klines.Limit(1000)
+		klines.Limit(int(limit))
 		response, err := klines.Do(ctx)
 		if err != nil {
 			logger.Panic("failed to get klines", zap.Error(err))
